@@ -7,7 +7,7 @@
 (t/deftest parserAE-test
     (t/testing "Num"
         (t/is (.equals (gr/numG 2) (sut/parser-AE '2))))
-    (t/testing "Suma"
+  (t/testing "Suma"
         (t/is (.equals (gr/addG (gr/numG 2) (gr/numG 4)) (sut/parser-AE '(+ 2 4)))))
     (t/testing "Resta Anidada"
         (t/is (.equals (gr/subG (gr/subG (gr/numG 7) (gr/numG 8)) (gr/numG 4)) (sut/parser-AE '(- (- 7 8) 4)))))
