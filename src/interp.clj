@@ -6,8 +6,20 @@
 (defn interp-AE
   "Interprete de AE"
   [exp]
-()
-  )
+  (let [par (ps/parser-AE exp)]
+    (cond
+      (instance? ae/NumG par)
+      (:n par)
+
+      (instance? ae/AddG par)
+        (+ (interp-AE (:izq par)) (interp-AE (:der par)))
+        
+        (instance? ae/SubG par)
+        (- (interp-AE (:izq par)) (interp-AE (:der par)))
+        )
+      )
+    )
+
 
 (defn subst
 [exp sub_id val]
