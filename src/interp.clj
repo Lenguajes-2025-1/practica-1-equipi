@@ -9,6 +9,30 @@
 ()
   )
 
+(defn subst
+[exp sub_id val]
+(cond
+  (instance? wae/IdG exp)
+  (if (= (:i exp) sub_id)
+    val exp
+  )
+  (instance? wae/NumG exp)
+  exp
+  (instance? wae/AddG exp)
+  (wae/addG (subst (:izq exp) sub_id val) (subst (:der exp) sub_id val))
+  (instance? wae/SubG exp)
+  (wae/subG (subst (:izq exp) sub_id val) (subst (:der exp) sub_id val))
+  (instance? wae/WithG exp)
+  (let [binding (:assign exp)]
+    (if (= (:id binding) sub_id)
+      (wae/withG (wae/bindings (:id binding) (subst (:value binding) sub_id val))(:body exp))
+      (wae/withG (wae/bindings (:id binding) (subst (:value binding) sub_id val))(subst (:body exp) sub_id val))
+      )
+    )
+  )
+  )
+
+
 (defn interp-WAE
   "Interprete de WAE"
   [exp]
@@ -17,33 +41,21 @@
       (instance? wae/NumG par)
       (:n par)
       (instance? wae/IdG par)
-      (:i par)
+      (throw (IllegalArgumentException. "Oh OH, identificador libre"))
       (instance? wae/AddG par)
-        (+ (interp-WAE (:izq par)) (interp-WAE (:der par))))
+        (+ (interp-WAE (:izq par)) (interp-WAE (:der par)))
         
         (instance? wae/SubG par)
         (- (interp-WAE (:izq par)) (interp-WAE (:der par)))
         
         (instance? wae/WithG par)
-        (let [binding (:assign exp)]
-          (str "(with (" (:id binding) " " (print_WAE (:value binding)) ") " (print_WAE (:body exp)) ")"))
+        (let [binding (:assign par)]
+          (interp-WAE (subst (:body par) (:id binding) (interp-WAE (:value binding))))
+          )
+
+        )
       )
     )
-)
 
-(defn subst
-[exp sub_id val]
-(cond
-  (instance? wae/IdG exp)
-  (if (= (:i exp) sub_id)
-    (val)
-    )
-  (instance? wae/NumG exp)
-  (:n exp)
-  (instance? wae/AddG exp)
-  (wae/addG (subst (:izq exp) ) (interp-WAE (:der exp))))
-        
-        (instance? wae/SubG exp)
-        (- (interp-WAE (:izq exp)) (interp-WAE (:der exp)))
-  )
-)
+
+
